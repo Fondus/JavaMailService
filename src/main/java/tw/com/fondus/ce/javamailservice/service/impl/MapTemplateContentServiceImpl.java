@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import tw.com.fondus.ce.javamailservice.service.MapTemplateContentService;
 
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,7 +19,8 @@ public class MapTemplateContentServiceImpl implements MapTemplateContentService 
 	public Map<String, Object> patchJsonData( JsonNode data ) throws JsonProcessingException {
 		Map<String, Object> mapData = new HashMap<>( Map.of( "all-data", data, "body", data.toPrettyString() ) );
 		mapData.putAll( new ObjectMapper().readValue( data.toString(), HashMap.class ) );
-		log.info( "mapData: {}", mapData );
+		mapData.put("timestamp", OffsetDateTime.now().format( DateTimeFormatter.ofPattern( "yyyy-MM-dd hh:mm" ) ) );
+		log.debug( "patchJsonData.mapData: {}", mapData );
 		return mapData;
 	}
 }
