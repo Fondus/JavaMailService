@@ -16,26 +16,34 @@ import tw.com.fondus.ce.javamailservice.service.ContentService;
 import tw.com.fondus.ce.javamailservice.service.MailService;
 import tw.com.fondus.ce.javamailservice.service.MapTemplateContentService;
 import tw.com.fondus.ce.javamailservice.service.exception.ContentGenerationException;
+import tw.com.fondus.ce.javamailservice.service.exception.MailInfoNotFoundException;
 import tw.com.fondus.ce.javamailservice.vo.APIResult;
 import tw.com.fondus.ce.javamailservice.vo.Content;
 
 import javax.mail.MessagingException;
 
-@RestController @RequestMapping( "/emails" )
+@RestController
+@RequestMapping( "/emails" )
 @Slf4j
 public class EmailController {
-	@Autowired EmailConfiguration emailConfiguration;
-	@Autowired ContentService contentService;
-	@Autowired MailService mailService;
-	@Autowired MapTemplateContentService mapTemplateContentService;
+	@Autowired
+	EmailConfiguration emailConfiguration;
+	@Autowired
+	ContentService contentService;
+	@Autowired
+	MailService mailService;
+	@Autowired
+	MapTemplateContentService mapTemplateContentService;
 
-	@PostMapping( "/templates/{templateName}" ) public APIResult<String> sendEmailUsingTemplate(
-			@PathVariable String templateName, @RequestBody JsonNode data ) {
+	@PostMapping( "/templates/{templateName}" )
+	public APIResult<String> sendEmailUsingTemplate( @PathVariable String templateName, @RequestBody JsonNode data ) {
 		try {
-			Content content = contentService.generate( templateName,
-					mapTemplateContentService.patchJsonData( data ) );
+			Content content = contentService.generate( templateName, mapTemplateContentService.patchJsonData( data ) );
 			ObjectMapper mapper = new ObjectMapper();
-			MailInfo mailInfo = mapper.readValue( data.get( "info" ).toString(), MailInfo.class );
+			JsonNode info = data.get( "info" );
+			if ( info == null )
+				throw new MailInfoNotFoundException( "Mail Info not found." );
+			MailInfo mailInfo = mapper.readValue( info.toString(), MailInfo.class );
 			if ( content.isHtml() ) {
 				return APIResult.success(
 						mailService.emailTo( mailInfo, content.getSubject(), emailConfiguration.getFrom(),
@@ -45,7 +53,7 @@ public class EmailController {
 						mailService.emailTo( mailInfo, content.getSubject(), emailConfiguration.getFrom(),
 								content.getText(), MailService.CONTENT_BODY_TYPE.TEXT ) );
 			}
-		} catch (MessagingException | ContentGenerationException | JsonProcessingException e) {
+		} catch (MessagingException | ContentGenerationException | JsonProcessingException | MailInfoNotFoundException e) {
 			e.printStackTrace();
 			return APIResult.fail( e );
 		}
