@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConfigurationProperties(value = "fondus.settings.mail")
+@ConfigurationProperties( value = "fondus.settings.mail" )
 @Data
 @NoArgsConstructor
 public class EmailConfiguration {
