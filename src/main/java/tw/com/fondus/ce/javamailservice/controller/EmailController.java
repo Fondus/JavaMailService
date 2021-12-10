@@ -20,8 +20,6 @@ import tw.com.fondus.ce.javamailservice.service.exception.MailInfoNotFoundExcept
 import tw.com.fondus.ce.javamailservice.vo.APIResult;
 import tw.com.fondus.ce.javamailservice.vo.Content;
 
-import javax.mail.MessagingException;
-
 @RestController
 @RequestMapping( "/emails" )
 @Slf4j
@@ -53,7 +51,7 @@ public class EmailController {
 						mailService.emailTo( mailInfo, content.getSubject(), emailConfiguration.getFrom(),
 								content.getText(), MailService.CONTENT_BODY_TYPE.TEXT ) );
 			}
-		} catch (MessagingException | ContentGenerationException | JsonProcessingException | MailInfoNotFoundException e) {
+		} catch (ContentGenerationException | JsonProcessingException | MailInfoNotFoundException e) {
 			e.printStackTrace();
 			return APIResult.fail( e );
 		}
