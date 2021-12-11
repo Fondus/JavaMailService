@@ -1,25 +1,22 @@
 server:
-    port:
-        10025
+  port: 10025
 
-
-# example of AWS smtp settings
 spring:
-    mail:
-        host: email-smtp.us-east-1.amazonaws.com
-        username: aws-ses-user
-        password: aws-ses-key
-        properties:
-            mail:
-                transport:
-                    protocol: smtp
-            smtp:
-                port: 587
-                auth: true
-                enable: true
-                required: true
+  mail:
+    host: ${SMTP_HOST:email-smtp.us-east-1.amazonaws.com}
+    username: ${SMTP_USER:aws-ses-user}
+    password: ${SMTP_PASSWORD:aws-ses-key}
+    properties:
+      mail:
+        transport:
+          protocol: smtp
+      smtp:
+        port: ${SMTP_PORT:587}
+        auth: true
+        enable: true
+        required: true
 
 fondus:
-    settings:
-        mail:
-            from: mail-noreply@fondus.com.tw
+  settings:
+    mail:
+      from: mail-noreply@fondus.com.tw
