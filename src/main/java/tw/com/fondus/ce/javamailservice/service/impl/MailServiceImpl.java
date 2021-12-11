@@ -10,6 +10,7 @@ import tw.com.fondus.ce.javamailservice.vo.Attachment;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -24,14 +25,12 @@ public class MailServiceImpl implements MailService {
 	public String emailTo( MailInfo mailInfo, String subject, String from, String content,
 			CONTENT_BODY_TYPE contentBodyType, Attachment... attachments ) {
 		try {
-			if ( mailInfo == null || mailInfo.getTo()
+			if ( Objects.isNull( mailInfo ) || mailInfo.getTo()
 					.isEmpty() )
 				return "not-sent";
 
 			MimeMessage message = emailSender.createMimeMessage();
-
 			MimeMessageHelper helper = new MimeMessageHelper( message, true, "UTF-8" );
-
 			helper.setFrom( from );
 			helper.setTo( mailInfo.getTo()
 					.toArray( new String[0] ) );
@@ -47,6 +46,7 @@ public class MailServiceImpl implements MailService {
 			}
 			emailSender.send( message );
 		} catch (MessagingException e) {
+			log.error( "Send email has something wrong.", e );
 		}
 		return "ok";
 	}
