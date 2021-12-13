@@ -4,14 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import tw.com.fondus.ce.javamailservice.config.EmailConfiguration;
 import tw.com.fondus.ce.javamailservice.entity.MailInfo;
+import tw.com.fondus.ce.javamailservice.property.EmailProperties;
 import tw.com.fondus.ce.javamailservice.service.ContentService;
 import tw.com.fondus.ce.javamailservice.service.MailService;
 import tw.com.fondus.ce.javamailservice.service.MapTemplateContentService;
@@ -20,41 +19,49 @@ import tw.com.fondus.ce.javamailservice.service.exception.MailInfoNotFoundExcept
 import tw.com.fondus.ce.javamailservice.vo.APIResult;
 import tw.com.fondus.ce.javamailservice.vo.Content;
 
-import javax.mail.MessagingException;
+import java.util.Objects;
 
+@Slf4j
 @RestController
 @RequestMapping( "/emails" )
-@Slf4j
 public class EmailController {
-	@Autowired
-	EmailConfiguration emailConfiguration;
-	@Autowired
-	ContentService contentService;
-	@Autowired
-	MailService mailService;
-	@Autowired
-	MapTemplateContentService mapTemplateContentService;
+	private final EmailProperties emailProperties;
+	private final ContentService contentService;
+	private final MailService mailService;
+	private final MapTemplateContentService mapTemplateContentService;
+	private final ObjectMapper mapper;
+
+	public EmailController( EmailProperties emailProperties,
+			ContentService contentService,
+			MailService mailService,
+			MapTemplateContentService mapTemplateContentService,
+			ObjectMapper mapper ){
+		this.emailProperties = emailProperties;
+		this.contentService = contentService;
+		this.mailService = mailService;
+		this.mapTemplateContentService = mapTemplateContentService;
+		this.mapper = mapper;
+	}
 
 	@PostMapping( "/templates/{templateName}" )
 	public APIResult<String> sendEmailUsingTemplate( @PathVariable String templateName, @RequestBody JsonNode data ) {
 		try {
-			Content content = contentService.generate( templateName, mapTemplateContentService.patchJsonData( data ) );
-			ObjectMapper mapper = new ObjectMapper();
+			Content content = this.contentService.generate( templateName, this.mapTemplateContentService.patchJsonData( data ) );
 			JsonNode info = data.get( "info" );
-			if ( info == null )
+			if ( Objects.isNull( info ) )
 				throw new MailInfoNotFoundException( "Mail Info not found." );
-			MailInfo mailInfo = mapper.readValue( info.toString(), MailInfo.class );
+			MailInfo mailInfo = this.mapper.readValue( info.toString(), MailInfo.class );
 			if ( content.isHtml() ) {
 				return APIResult.success(
-						mailService.emailTo( mailInfo, content.getSubject(), emailConfiguration.getFrom(),
+						this.mailService.emailTo( mailInfo, content.getSubject(), this.emailProperties.getFrom(),
 								content.getHtml(), MailService.CONTENT_BODY_TYPE.HTML ) );
 			} else {
 				return APIResult.success(
-						mailService.emailTo( mailInfo, content.getSubject(), emailConfiguration.getFrom(),
+						this.mailService.emailTo( mailInfo, content.getSubject(), this.emailProperties.getFrom(),
 								content.getText(), MailService.CONTENT_BODY_TYPE.TEXT ) );
 			}
-		} catch (MessagingException | ContentGenerationException | JsonProcessingException | MailInfoNotFoundException e) {
-			e.printStackTrace();
+		} catch (ContentGenerationException | JsonProcessingException | MailInfoNotFoundException e) {
+			log.error( "Failed to send email.", e );
 			return APIResult.fail( e );
 		}
 	}

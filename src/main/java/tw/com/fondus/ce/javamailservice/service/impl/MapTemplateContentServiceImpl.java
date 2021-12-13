@@ -12,14 +12,21 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
-@Service
 @Slf4j
+@Service
 public class MapTemplateContentServiceImpl implements MapTemplateContentService {
+	private final ObjectMapper mapper;
+
+	public MapTemplateContentServiceImpl( ObjectMapper mapper ){
+		this.mapper = mapper;
+	}
+
 	@Override
 	public Map<String, Object> patchJsonData( JsonNode data ) throws JsonProcessingException {
 		Map<String, Object> mapData = new HashMap<>( Map.of( "all-data", data, "body", data.toPrettyString() ) );
-		mapData.putAll( new ObjectMapper().readValue( data.toString(), HashMap.class ) );
-		mapData.put("timestamp", OffsetDateTime.now().format( DateTimeFormatter.ofPattern( "yyyy-MM-dd hh:mm" ) ) );
+		mapData.putAll( this.mapper.readValue( data.toString(), HashMap.class ) );
+		mapData.put( "timestamp", OffsetDateTime.now()
+				.format( DateTimeFormatter.ofPattern( "yyyy-MM-dd hh:mm" ) ) );
 		log.debug( "patchJsonData.mapData: {}", mapData );
 		return mapData;
 	}

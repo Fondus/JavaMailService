@@ -1,6 +1,6 @@
 package tw.com.fondus.ce.javamailservice.service.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -10,26 +10,34 @@ import tw.com.fondus.ce.javamailservice.vo.Attachment;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import java.util.Objects;
 
+@Slf4j
 @Service
 public class MailServiceImpl implements MailService {
-	@Autowired private JavaMailSender emailSender;
+	private final JavaMailSender emailSender;
 
-	@Override public String emailTo( MailInfo mailInfo, String subject, String from, String content,
-			CONTENT_BODY_TYPE contentBodyType, Attachment... attachments ) throws MessagingException {
+	public MailServiceImpl( JavaMailSender emailSender ){
+		this.emailSender = emailSender;
+	}
+
+	@Override
+	public String emailTo( MailInfo mailInfo, String subject, String from, String content,
+			CONTENT_BODY_TYPE contentBodyType, Attachment... attachments ) {
 		try {
-			if ( mailInfo == null || mailInfo.getTo().isEmpty() )
+			if ( Objects.isNull( mailInfo ) || mailInfo.getTo()
+					.isEmpty() )
 				return "not-sent";
 
 			MimeMessage message = emailSender.createMimeMessage();
-
-			MimeMessageHelper helper = null;
-			helper = new MimeMessageHelper( message, true, "UTF-8" );
-
+			MimeMessageHelper helper = new MimeMessageHelper( message, true, "UTF-8" );
 			helper.setFrom( from );
-			helper.setTo( mailInfo.getTo().toArray( new String[mailInfo.getTo().size()] ) );
-			helper.setCc( mailInfo.getCc().toArray(new String[mailInfo.getCc().size()]) );
-			helper.setBcc( mailInfo.getBcc().toArray(new String[mailInfo.getBcc().size()]) );
+			helper.setTo( mailInfo.getTo()
+					.toArray( new String[0] ) );
+			helper.setCc( mailInfo.getCc()
+					.toArray( new String[0] ) );
+			helper.setBcc( mailInfo.getBcc()
+					.toArray( new String[0] ) );
 			helper.setSubject( subject );
 			helper.setText( content, contentBodyType == CONTENT_BODY_TYPE.HTML );
 
@@ -38,6 +46,7 @@ public class MailServiceImpl implements MailService {
 			}
 			emailSender.send( message );
 		} catch (MessagingException e) {
+			log.error( "Send email has something wrong.", e );
 		}
 		return "ok";
 	}
