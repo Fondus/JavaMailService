@@ -9,7 +9,7 @@
 		<relativePath/>
 	</parent>
 	<groupId>tw.com.fondus.ce</groupId>
-	<artifactId>JavaMailService</artifactId>
+	<artifactId>java-mail-service</artifactId>
 	<packaging>jar</packaging>
 	<version>0.1.0-SNAPSHOT</version>
 
