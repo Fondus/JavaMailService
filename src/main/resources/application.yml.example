@@ -20,3 +20,7 @@ fondus:
   settings:
     mail:
       from: mail-noreply@fondus.com.tw
+
+templates:
+  name: model-verification
+  folder: $.data.status
