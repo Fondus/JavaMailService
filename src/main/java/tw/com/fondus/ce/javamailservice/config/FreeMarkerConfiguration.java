@@ -4,8 +4,10 @@ import freemarker.template.Configuration;
 import no.api.freemarker.java8.Java8ObjectWrapper;
 import org.springframework.context.annotation.Bean;
 
-@org.springframework.context.annotation.Configuration public class FreeMarkerConfiguration {
-	@Bean public Configuration getFreeMarkerConfiguration() {
+@org.springframework.context.annotation.Configuration
+public class FreeMarkerConfiguration {
+	@Bean
+	public Configuration getFreeMarkerConfiguration() {
 		Configuration configuration = new Configuration( Configuration.VERSION_2_3_29 );
 		configuration.setClassLoaderForTemplateLoading( FreeMarkerConfiguration.class.getClassLoader(),
 				"/freemarker-templates" );

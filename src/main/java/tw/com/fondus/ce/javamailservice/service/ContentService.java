@@ -6,5 +6,5 @@ import tw.com.fondus.ce.javamailservice.vo.Content;
 import java.util.Map;
 
 public interface ContentService {
-	Content generate(String template,  Map<String, Object> data) throws ContentGenerationException;
+	Content generate( String template, Map<String, Object> data ) throws ContentGenerationException;
 }
